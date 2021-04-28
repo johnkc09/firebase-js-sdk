@@ -157,7 +157,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
 
   private forceRefresh = false;
 
-  private auth: FirebaseAuthInternal | null;
+  private auth?: FirebaseAuthInternal;
 
   constructor(authProvider: Provider<FirebaseAuthInternalName>) {
     this.tokenListener = () => {
