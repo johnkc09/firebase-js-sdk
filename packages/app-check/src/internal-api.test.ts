@@ -56,12 +56,14 @@ describe('internal api', () => {
     const fakeRecaptchaToken = 'fake-recaptcha-token';
     const fakeRecaptchaAppCheckToken = {
       token: 'fake-recaptcha-app-check-token',
-      expireTimeMillis: 123
+      expireTimeMillis: 123,
+      issuedAtTimeMillis: 0
     };
 
     const fakeCachedAppCheckToken = {
       token: 'fake-cached-app-check-token',
-      expireTimeMillis: 123
+      expireTimeMillis: 123,
+      issuedAtTimeMillis: 0
     };
 
     it('uses customTokenProvider to get an AppCheck token', async () => {
@@ -313,7 +315,8 @@ describe('internal api', () => {
         ...getState(app),
         token: {
           token: `fake-memory-app-check-token`,
-          expireTimeMillis: 123
+          expireTimeMillis: 123,
+          issuedAtTimeMillis: 0
         }
       });
 
@@ -326,7 +329,8 @@ describe('internal api', () => {
       stub(storage, 'readTokenFromStorage').returns(
         Promise.resolve({
           token: `fake-cached-app-check-token`,
-          expireTimeMillis: 123
+          expireTimeMillis: 123,
+          issuedAtTimeMillis: 0
         })
       );
 
