@@ -171,26 +171,26 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
 
     this.tokenCounter = 0;
 
-    this.auth = authProvider.getImmediate({ optional: true });
+    authProvider.get().then(auth => {
+      logDebug('FirebaseCredentialsProvider', 'Auth detected');
+      this.auth = auth;
+      if (this.tokenListener) {
+        // tokenListener can be removed by removeChangeListener()
+        this.auth.addAuthTokenListener(this.tokenListener);
+      }
+    });
 
-    if (this.auth) {
-      this.auth.addAuthTokenListener(this.tokenListener!);
-    } else {
-      // if auth is not available, invoke tokenListener once with null token
-      this.tokenListener(null);
-      authProvider.get().then(
-        auth => {
-          this.auth = auth;
-          if (this.tokenListener) {
-            // tokenListener can be removed by removeChangeListener()
-            this.auth.addAuthTokenListener(this.tokenListener);
-          }
-        },
-        () => {
-          /* this.authProvider.get() never rejects */
-        }
-      );
-    }
+    // Our users can initialize Auth right after Firestore, so we give it
+    // a chance to register itself with the component framework before we
+    // determine whether to start up in unauthenticated mode.
+    setTimeout(() => {
+      // If auth is still not available, invoke tokenListener once with null
+      // token
+      if (!this.auth && this.tokenListener) {
+        logDebug('FirebaseCredentialsProvider', 'Auth not yet detected');
+        this.tokenListener(null);
+      }
+    }, 0);
   }
 
   getToken(): Promise<Token | null> {
