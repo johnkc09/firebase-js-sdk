@@ -157,7 +157,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
 
   private forceRefresh = false;
 
-  private auth?: FirebaseAuthInternal;
+  private auth: FirebaseAuthInternal | null = null;
 
   constructor(authProvider: Provider<FirebaseAuthInternalName>) {
     this.tokenListener = () => {
@@ -171,24 +171,31 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
 
     this.tokenCounter = 0;
 
-    void authProvider.get().then(auth => {
+    const registerAuth = (auth: FirebaseAuthInternal) => {
       logDebug('FirebaseCredentialsProvider', 'Auth detected');
       this.auth = auth;
       if (this.tokenListener) {
         // tokenListener can be removed by removeChangeListener()
         this.auth.addAuthTokenListener(this.tokenListener);
       }
-    });
+    };
+
+    void authProvider.get().then(auth => registerAuth(auth));
 
     // Our users can initialize Auth right after Firestore, so we give it
     // a chance to register itself with the component framework before we
     // determine whether to start up in unauthenticated mode.
     setTimeout(() => {
-      // If auth is still not available, invoke tokenListener once with null
-      // token
-      if (!this.auth && this.tokenListener) {
-        logDebug('FirebaseCredentialsProvider', 'Auth not yet detected');
-        this.tokenListener(null);
+      if (!this.auth) {
+        const auth = authProvider.getImmediate({ optional: true });
+        if (auth) {
+          registerAuth(auth);
+        } else if (this.tokenListener) {
+          // If auth is still not available, invoke tokenListener once with null
+          // token
+          logDebug('FirebaseCredentialsProvider', 'Auth not yet detected');
+          this.tokenListener(null);
+        }
       }
     }, 0);
   }
