@@ -171,7 +171,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
 
     this.tokenCounter = 0;
 
-    const registerAuth = (auth: FirebaseAuthInternal) => {
+    const registerAuth = (auth: FirebaseAuthInternal): void => {
       logDebug('FirebaseCredentialsProvider', 'Auth detected');
       this.auth = auth;
       if (this.tokenListener) {
