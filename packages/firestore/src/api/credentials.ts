@@ -140,7 +140,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
    * The auth token listener registered with FirebaseApp, retained here so we
    * can unregister it.
    */
-  private tokenListener: ((token: string | null) => void) | null = null;
+  private tokenListener: (() => void) | null = null;
 
   /** Tracks the current User. */
   private currentUser: User = User.UNAUTHENTICATED;
@@ -177,10 +177,11 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
       if (this.tokenListener) {
         // tokenListener can be removed by removeChangeListener()
         this.auth.addAuthTokenListener(this.tokenListener);
+        this.tokenListener();
       }
     };
 
-    void authProvider.onInit(auth => registerAuth(auth));
+    authProvider.onInit(auth => registerAuth(auth));
 
     // Our users can initialize Auth right after Firestore, so we give it
     // a chance to register itself with the component framework before we
@@ -194,7 +195,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
           // If auth is still not available, invoke tokenListener once with null
           // token
           logDebug('FirebaseCredentialsProvider', 'Auth not yet detected');
-          this.tokenListener(null);
+          this.tokenListener();
         }
       }
     }, 0);
