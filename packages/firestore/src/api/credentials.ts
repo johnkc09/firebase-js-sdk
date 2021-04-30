@@ -180,7 +180,7 @@ export class FirebaseCredentialsProvider implements CredentialsProvider {
       }
     };
 
-    void authProvider.get().then(auth => registerAuth(auth));
+    void authProvider.onInit(auth => registerAuth(auth));
 
     // Our users can initialize Auth right after Firestore, so we give it
     // a chance to register itself with the component framework before we
